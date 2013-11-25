@@ -184,6 +184,7 @@
     
         return size;
     }
+    ID3v2.readSynchsafeInteger32At = readSynchsafeInteger32At;
 
     function readFrameFlags(data, offset)
     {
