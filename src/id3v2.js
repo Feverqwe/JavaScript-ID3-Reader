@@ -341,6 +341,7 @@
             // The 'Extended header size', currently 6 or 10 bytes, excludes itself.
             offset += xheadersize + 4;
         }
+        ID3v2.readSynchsafeInteger32At = readSynchsafeInteger32At;
 
         var id3 = {
     	    "version" : '2.' + major + '.' + revision,
