@@ -13,27 +13,7 @@
                 var result = event.target.result;
                 fncCallback(new BinaryFile(result));
             };
-            var check_id3v2 = function(file, cb) {
-                var id3v2_reader = new FileReader();
-                id3v2_reader.onload = function(event) {
-                    var data = event.target.result;
-                    if (data.substr(0, 3) === "ID3") {
-                        data = new BinaryFile(data);
-                        var size = ns.ID3v2.readSynchsafeInteger32At(6, data);
-                        var tags_body = file.slice(0, size);
-                        cb(tags_body);
-                    } else
-                    if (data.substr(4, 7) === "ftypM4A") {
-                        cb(file);
-                    } else {
-                        cb(file.slice(file.size - 1 - 128, file.size));
-                    }
-                };
-                id3v2_reader.readAsBinaryString(file.slice(0, 28));
-            };
-            check_id3v2(file, function(result) {
-                reader.readAsBinaryString(result);
-            });
+            reader.readAsBinaryString(file);
         }
     };
 })(this);
