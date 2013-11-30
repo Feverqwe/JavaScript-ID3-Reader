@@ -128,15 +128,6 @@
             "description": desc.toString(),
             "data": image || data.getBytesAt(offset, (start+length) - offset)
         };
-        
-        offset += 1 + desc.bytesReadCount;
-        
-        return {
-            "format" : format.toString(),
-            "type" : type,
-            "description" : desc.toString(),
-            "data" : data.getBytesAt(offset, (start+length) - offset)
-        };
     };
     
     ID3v2.readFrameData['COMM'] = function readCommentsFrame(offset, length, data) {
