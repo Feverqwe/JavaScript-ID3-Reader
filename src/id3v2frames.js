@@ -109,7 +109,7 @@
                 pos = 0;
             }
             if (index !== -1) {
-                return [data.substr(index - pos), type];
+                return [data.substr(index - pos), "image/"+type];
             } else {
                 return undefined;
             }
@@ -126,7 +126,7 @@
             "format": format.toString(),
             "type": type,
             "description": desc.toString(),
-            "data": image || data.getBytesAt(offset, (start+length) - offset)
+            "data": image || data.getStringAt(offset, (start+length) - offset)
         };
     };
     
