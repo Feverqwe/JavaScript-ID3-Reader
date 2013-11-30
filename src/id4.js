@@ -87,7 +87,7 @@
         while (seek < offset + length)
         {
             var atomSize = data.getLongAt(seek, true);
-            if (atomSize == 0) return;
+            if (isNaN(atomSize) || atomSize == 0) return;
             var atomName = data.getStringAt(seek + 4, 4);
             // Container atoms
             if (['moov', 'udta', 'meta', 'ilst'].indexOf(atomName) > -1)
