@@ -1,7 +1,6 @@
 set CLOSURE_COMPILER=..\3pm-player\compiler.jar
 
 java -jar "%CLOSURE_COMPILER%"^
- --compilation_level ADVANCED_OPTIMIZATIONS^
  --js src\stringutils.js^
  --js src\binaryfile.js^
  --js src\bufferedbinaryajax.js^

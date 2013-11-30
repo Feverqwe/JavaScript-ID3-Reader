@@ -12,7 +12,7 @@ var BufferedBinaryFileReader = function(file, fncCallback, fncError) {
      * @constructor
      * @augments BinaryFile
      */
-    function BufferedBinaryFile(file, iLength, blockSize, blockRadius) {
+    var BufferedBinaryFile = function(file, iLength, blockSize, blockRadius) {
         var undefined;
         var downloadedBytesCount = 0;
         var binaryFile = new BinaryFile("", 0, iLength);
@@ -21,7 +21,7 @@ var BufferedBinaryFileReader = function(file, fncCallback, fncError) {
         /**
          * @param {?function()} callback If a function is passed then this function will be asynchronous and the callback invoked when the blocks have been loaded, otherwise it blocks script execution until the request is completed.
          */
-        function waitForBlocks(range, callback) {
+        var waitForBlocks = function(range, callback) {
             while (dataFile[range[0]] !== 0) {
                 range[0]++;
                 if (range[0] > range[1])
@@ -46,7 +46,7 @@ var BufferedBinaryFileReader = function(file, fncCallback, fncError) {
                     callback();
             };
             reader.readAsArrayBuffer(file.slice(range[0], range[1]));
-        }
+        };
 
         // Mixin all BinaryFile's methods.
         // Not using prototype linking since the constructor needs to know
@@ -64,10 +64,10 @@ var BufferedBinaryFileReader = function(file, fncCallback, fncError) {
         this.getByteAt = function(offset) {
             var data = dataFile[offset];
             /*
-            if (data === 0) {
-                console.log("Empty data:", offset);
-            }
-            */
+             if (data === 0) {
+             console.log("Empty data:", offset);
+             }
+             */
             return data;
         };
 
@@ -89,12 +89,6 @@ var BufferedBinaryFileReader = function(file, fncCallback, fncError) {
         this.loadRange = function(range, callback) {
             waitForBlocks(range, callback);
         };
-    }
-
-    function init() {
-
-        fncCallback(new BufferedBinaryFile(file, file.size));
-    }
-
-    init();
+    };
+    fncCallback(new BufferedBinaryFile(file, file.size));
 };
