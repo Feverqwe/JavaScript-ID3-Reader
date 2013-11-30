@@ -92,6 +92,42 @@
         var bite = data.getByteAt(offset, 1);
         var type = pictureType[bite];
         var desc = data.getStringWithCharsetAt(offset+1, length - (offset-start), charset);
+
+        var serach_image = function(data) {
+            var index = data.indexOf('JFIF');
+            var type = "jpeg";
+            var pos = 6;
+            if (index === -1) {
+                index = data.indexOf('PNG');
+                type = "png";
+                pos = 1;
+            }
+            if (index === -1) {
+                var bin = String.fromCharCode.apply(null, [255, 216, 255, 225]);
+                index = data.indexOf(bin);
+                type = "jpeg";
+                pos = 0;
+            }
+            if (index !== -1) {
+                return [data.substr(index - pos), type];
+            } else {
+                return undefined;
+            }
+        };
+        var image = serach_image(data.getStringAt(offset, (start + length) - offset));
+        if (image) {
+            format = image[1];
+            image = image[0];
+        }
+        
+        offset += 1 + desc.bytesReadCount;
+
+        return {
+            "format": format.toString(),
+            "type": type,
+            "description": desc.toString(),
+            "data": image || data.getBytesAt(offset, (start+length) - offset)
+        };
         
         offset += 1 + desc.bytesReadCount;
         
