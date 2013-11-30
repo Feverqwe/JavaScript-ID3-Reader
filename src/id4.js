@@ -41,7 +41,7 @@
 
     ID4.loadData = function(data, callback) {
         // load the header of the first block
-        data.loadRange([0, 7], function () {
+        data.loadRange([0, 9], function () {
             loadAtom(data, 0, data.getLength(), callback);
         });
     };
@@ -55,7 +55,7 @@
         // When reading the current block we always read 8 more bytes in order
         // to also read the header of the next block.
         var atomSize = data.getLongAt(offset, true);
-        if (atomSize == 0) return callback();
+        if (isNaN(atomSize) || atomSize === 0) return callback();
         var atomName = data.getStringAt(offset + 4, 4);
         
         // Container atoms
@@ -128,7 +128,7 @@
                         case 'png':
                             atomData = {
                                 format  : "image/" + type,
-                                data    : data.getBytesAt(dataStart, dataEnd)
+                                data    : data.getStringAt(dataStart, dataEnd)
                             };
                             break;
                     }

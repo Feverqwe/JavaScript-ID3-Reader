@@ -17,23 +17,36 @@ var BufferedBinaryFileReader = function(file, fncCallback, fncError) {
         var downloadedBytesCount = 0;
         var binaryFile = new BinaryFile("", 0, iLength);
         var dataFile = new Uint8Array(iLength);
+        var gotDataRange = [];
+        var inRange = function(value) {
+            var ex = 0;
+            gotDataRange.forEach(function(item) {
+                if (value >= item[0] && value < item[1]) {
+                    ex = 1;
+                    return 0;
+                }
+            });
+            return ex;
+        };
 
         /**
          * @param {?function()} callback If a function is passed then this function will be asynchronous and the callback invoked when the blocks have been loaded, otherwise it blocks script execution until the request is completed.
          */
         var waitForBlocks = function(range, callback) {
-            while (dataFile[range[0]] !== 0) {
+            while (inRange(range[0]) !== 0) {
                 range[0]++;
                 if (range[0] > range[1])
                     return callback ? callback() : undefined;
             }
-            while (dataFile[range[1]] !== 0) {
+            while (inRange(range[1]) !== 0) {
                 range[1]--;
                 if (range[0] > range[1])
                     return callback ? callback() : undefined;
             }
             var reader = new FileReader();
             reader.onload = function(event) {
+                //console.log("Got range:", range);
+                gotDataRange.push(range);
                 var bytes = new Uint8Array(event.target.result);
                 var len = bytes.byteLength;
                 var t = [];
@@ -63,11 +76,9 @@ var BufferedBinaryFileReader = function(file, fncCallback, fncError) {
          */
         this.getByteAt = function(offset) {
             var data = dataFile[offset];
-            /*
-             if (data === 0) {
-             console.log("Empty data:", offset);
-             }
-             */
+            /*if (inRange(offset) === 0) {
+                console.log("Data don't loaded:", offset, dataFile[offset]);
+            }*/
             return data;
         };
 
