@@ -41,7 +41,7 @@
 
     ID4.loadData = function(data, callback) {
         // load the header of the first block
-        data.loadRange([0, 9], function () {
+        data.loadRange([0, 8], function () {
             loadAtom(data, 0, data.getLength(), callback);
         });
     };
