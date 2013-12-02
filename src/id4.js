@@ -128,7 +128,7 @@
                         case 'png':
                             atomData = {
                                 format  : "image/" + type,
-                                data    : data.getBytesAt(dataStart, dataEnd)
+                                data    : data.getStringAt(dataStart, dataEnd)
                             };
                             break;
                     }

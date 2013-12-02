@@ -71,43 +71,6 @@
         
         return (time.hours>0?time.hours+':':'') + minutes + ':' + seconds;
     }
-
-    var serach_array_in_array = function(arr, data) {
-        var bytes_len = arr.length;
-        if (bytes_len === 1) {
-            return data.indexOf(arr[0], pos);
-        }
-        var pos = 0;
-        var found_pos = -1;
-        while (pos >= 0 && found_pos < 0) {
-            pos = data.indexOf(arr[0], pos);
-            for (var i = 1; i < bytes_len; i++) {
-                if (data[pos + i] !== arr[i]) {
-                    break;
-                }
-                if (i === bytes_len - 1) {
-                    found_pos = pos;
-                }
-            }
-        }
-        return found_pos;
-    };
-
-    var serach_image = function(data) {
-        var index = serach_array_in_array([74, 70, 73, 70], data);//'JFIF'
-        var type = "jpeg";
-        var pos = 6;
-        if (index === -1) {
-            index = serach_array_in_array([80, 78, 71], data);//'PNG'
-            type = "png";
-            pos = 1;
-        }
-        if (index !== -1) {
-            return [data.slice(index - pos), "image/" + type];
-        } else {
-            return undefined;
-        }
-    };
         
     ID3v2.readFrameData['APIC'] = function readPictureFrame(offset, length, data, flags, v) {
         v = v || '3';
@@ -130,7 +93,22 @@
         var type = pictureType[bite];
         var desc = data.getStringWithCharsetAt(offset+1, length - (offset-start), charset);
 
-        var image = serach_image(data.getBytesAt(offset, (start + length) - offset));
+        var serach_image = function(data) {
+            var index = data.indexOf('JFIF');
+            var type = "jpeg";
+            var pos = 6;
+            if (index === -1) {
+                index = data.indexOf('PNG');
+                type = "png";
+                pos = 1;
+            }
+            if (index !== -1) {
+                return [data.substr(index - pos), "image/"+type];
+            } else {
+                return undefined;
+            }
+        };
+        var image = serach_image(data.getStringAt(offset, (start + length) - offset));
         if (image) {
             format = image[1];
             image = image[0];

@@ -67,7 +67,7 @@
       document.getElementById('album').textContent = tags.album || "";
       var image = tags.picture;
       if (image) {
-        var base64 = "data:" + image.format + ";base64," + btoa(String.fromCharCode.apply(null, image.data));
+        var base64 = "data:" + image.format + ";base64," + window.btoa(image.data);
         document.getElementById('picture').setAttribute('src',base64);
         document.getElementById('picture').style.display = "block";
       } else {
