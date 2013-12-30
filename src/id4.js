@@ -41,7 +41,7 @@
 
     ID4.loadData = function(data, callback) {
         // load the header of the first block
-        data.loadRange([0, 7], function () {
+        data.loadRange([0, 8], function () {
             loadAtom(data, 0, data.getLength(), callback);
         });
     };
@@ -55,7 +55,7 @@
         // When reading the current block we always read 8 more bytes in order
         // to also read the header of the next block.
         var atomSize = data.getLongAt(offset, true);
-        if (atomSize == 0) return callback();
+        if (atomSize === 0 || isNaN(atomSize)) return callback();
         var atomName = data.getStringAt(offset + 4, 4);
         
         // Container atoms
@@ -87,7 +87,7 @@
         while (seek < offset + length)
         {
             var atomSize = data.getLongAt(seek, true);
-            if (atomSize == 0) return;
+            if (atomSize == 0 || isNaN(atomSize)) return;
             var atomName = data.getStringAt(seek + 4, 4);
             // Container atoms
             if (['moov', 'udta', 'meta', 'ilst'].indexOf(atomName) > -1)
