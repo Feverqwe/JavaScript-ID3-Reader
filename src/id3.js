@@ -12,7 +12,7 @@
     
     var _files = {};
     // location of the format identifier
-    var _formatIDRange = [0, 11];
+    var _formatIDRange = [0, 7];
     
     /**
      * Finds out the tag format of this data and returns the appropriate

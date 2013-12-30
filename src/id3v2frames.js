@@ -72,22 +72,6 @@
         return (time.hours>0?time.hours+':':'') + minutes + ':' + seconds;
     }
         
-    var serach_image = function(data) {
-        var index = data.indexOf('JFIF');
-        var type = "jpeg";
-        var pos = 6;
-        if (index === -1) {
-            index = data.indexOf('PNG');
-            type = "png";
-            pos = 1;
-        }
-        if (index !== -1) {
-            return [data.substr(index - pos), "image/"+type];
-        } else {
-            return undefined;
-        }
-    };
-        
     ID3v2.readFrameData['APIC'] = function readPictureFrame(offset, length, data, flags, v) {
         v = v || '3';
         
@@ -108,20 +92,14 @@
         var bite = data.getByteAt(offset, 1);
         var type = pictureType[bite];
         var desc = data.getStringWithCharsetAt(offset+1, length - (offset-start), charset);
-
-        var image = serach_image(data.getStringAt(offset, (start + length) - offset));
-        if (image) {
-            format = image[1];
-            image = image[0];
-        }
         
         offset += 1 + desc.bytesReadCount;
-
+        
         return {
-            "format": format.toString(),
-            "type": type,
-            "description": desc.toString(),
-            "data": image || data.getStringAt(offset, (start+length) - offset)
+            "format" : format.toString(),
+            "type" : type,
+            "description" : desc.toString(),
+            "data" : data.getBytesAt(offset, (start+length) - offset)
         };
     };
     
