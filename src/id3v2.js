@@ -278,14 +278,14 @@
             }
                             
             // find frame parsing function
-            if( frameID in ID3v2.readFrameData ) {
+            if (ID3v2.readFrameData[frameID] !== undefined) {
                 readFrameFunc = ID3v2.readFrameData[frameID];
             } else if( frameID[0] == "T" ) {
                 readFrameFunc = ID3v2.readFrameData["T*"];
             }
             
             var parsedData = readFrameFunc ? readFrameFunc(frameDataOffset, frameSize, frameData, flags) : undefined;
-            var desc = frameID in ID3v2.frames ? ID3v2.frames[frameID] : 'Unknown';
+            var desc = ID3v2.frames[frameID] !== undefined ? ID3v2.frames[frameID] : 'Unknown';
         
             var frame = {
                 id          : frameID,
@@ -294,7 +294,7 @@
                 data        : parsedData
             };
         
-            if( frameID in frames ) {
+            if( frames[frameID] !== undefined ) {
                 if( frames[frameID].id ) {
                     frames[frameID] = [frames[frameID]];
                 }
@@ -313,10 +313,9 @@
     //}
 
     function getFrameData( frames, ids ) {
-        if( typeof ids == 'string' ) { ids = [ids]; }
-    
+        if( typeof ids === 'string' ) { ids = [ids]; }
         for( var i = 0, id; id = ids[i]; i++ ) {
-            if( id in frames ) { return frames[id].data; }
+            if( frames[id] !== undefined ) { return frames[id].data; }
         }
     }
     

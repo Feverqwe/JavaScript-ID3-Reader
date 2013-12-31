@@ -67,7 +67,7 @@
             });
         } else {
             // Value atoms
-            var readAtom = atomName in ID4.atom;
+            var readAtom = ID4.atom[atomName] !== undefined;
             data.loadRange([offset+(readAtom?0:atomSize), offset+atomSize + 8], function() {
                 loadAtom(data, offset+atomSize, length, callback);
             });
