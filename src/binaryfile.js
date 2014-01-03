@@ -121,6 +121,10 @@ function BinaryFile(strData, iDataOffset, iDataLength) {
 		        sString = StringUtils.readUTF8String(bytes);
 		        break;
 
+                    case 'iso-8859-1':
+                        sString = StringUtils.readISO_8859_1String(bytes);
+                        break;
+
 		    default:
 		        sString = StringUtils.readNullTerminatedString(bytes);
 		        break;
