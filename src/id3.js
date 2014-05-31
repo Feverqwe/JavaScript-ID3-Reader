@@ -9,11 +9,11 @@
 
 (function(ns) {
     var ID3 = ns.ID3 = {};
-    
+
     var _files = {};
     // location of the format identifier
-    var _formatIDRange = [0, 7];
-    
+    var _formatIDRange = [0, 11];
+
     /**
      * Finds out the tag format of this data and returns the appropriate
      * reader.
@@ -23,7 +23,7 @@
         return data.getStringAt(4, 7) == "ftypM4A" ? ID4 :
                (data.getStringAt(0, 3) == "ID3" ? ID3v2 : ID3v1);
     }
-    
+
     function readTags(reader, data, url, tags) {
         var tagsFound = reader.readTagsFromData(data, tags);
         //console.log("Downloaded data: " + data.getDownloadedBytesCount() + "bytes");
@@ -49,9 +49,9 @@
      */
     ID3.loadTags = function(url, cb, options) {
         options = options || {};
-        var dataReader = options["dataReader"] || BufferedBinaryAjax;
-        
-        dataReader(url, function(data) {
+        var dataReader = (options["file"]) ? BufferedFileReader : options["dataReader"];
+
+        dataReader(options["file"] || url, function(data) {
             // preload the format identifier
             data.loadRange(_formatIDRange, function() {
                 var reader = getTagReader(data);
@@ -65,7 +65,7 @@
 
     ID3.getAllTags = function(url) {
         if (!_files[url]) return null;
-        
+
         var tags = {};
         for (var a in _files[url]) {
             if (_files[url].hasOwnProperty(a))
@@ -79,7 +79,7 @@
 
         return _files[url][tag];
     };
-    
+
     // Export functions for closure compiler
     ns["ID3"] = ns.ID3;
     ID3["loadTags"] = ID3.loadTags;

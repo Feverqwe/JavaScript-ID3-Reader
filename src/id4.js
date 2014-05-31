@@ -9,7 +9,7 @@
 
 (function(ns) {
     var ID4 = ns.ID4 = {};
-    
+
     ID4.types = {
         '0'     : 'uint8',
         '1'     : 'text',
@@ -41,7 +41,7 @@
 
     ID4.loadData = function(data, callback) {
         // load the header of the first block
-        data.loadRange([0, 7], function () {
+        data.loadRange([0, 8], function() {
             loadAtom(data, 0, data.getLength(), callback);
         });
     };
@@ -55,9 +55,10 @@
         // When reading the current block we always read 8 more bytes in order
         // to also read the header of the next block.
         var atomSize = data.getLongAt(offset, true);
-        if (atomSize == 0) return callback();
+        if (isNaN(atomSize) || atomSize === 0)
+            return callback();
         var atomName = data.getStringAt(offset + 4, 4);
-        
+
         // Container atoms
         if (['moov', 'udta', 'meta', 'ilst'].indexOf(atomName) > -1)
         {
@@ -67,11 +68,11 @@
             });
         } else {
             // Value atoms
-            var readAtom = atomName in ID4.atom;
+            var readAtom = ID4.atom[atomName] !== undefined;
             data.loadRange([offset+(readAtom?0:atomSize), offset+atomSize + 8], function() {
                 loadAtom(data, offset+atomSize, length, callback);
             });
-        }       
+        }
     };
 
     ID4.readTagsFromData = function(data) {
@@ -87,7 +88,8 @@
         while (seek < offset + length)
         {
             var atomSize = data.getLongAt(seek, true);
-            if (atomSize == 0) return;
+            if (isNaN(atomSize) || atomSize == 0)
+                return;
             var atomName = data.getStringAt(seek + 4, 4);
             // Container atoms
             if (['moov', 'udta', 'meta', 'ilst'].indexOf(atomName) > -1)
@@ -119,11 +121,11 @@
                         case 'text':
                             atomData = data.getStringWithCharsetAt(dataStart, dataEnd, "UTF-8");
                             break;
-                            
+
                         case 'uint8':
                             atomData = data.getShortAt(dataStart);
                             break;
-                            
+
                         case 'jpeg':
                         case 'png':
                             atomData = {
@@ -145,7 +147,7 @@
             seek += atomSize;
         }
     }
-    
+
     // Export functions for closure compiler
     ns["ID4"] = ns.ID4;
 })(this);

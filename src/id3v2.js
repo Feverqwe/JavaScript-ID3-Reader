@@ -5,7 +5,7 @@
 
 (function(ns) {
     var ID3v2 = ns.ID3v2 = {};
-    
+
     ID3v2.readFrameData = {};
     ID3v2.frames = {
         // v2.2
@@ -161,7 +161,7 @@
         "lyrics"    : ["USLT", "ULT"]
     };
     var _defaultShortcuts = ["title", "artist", "album", "track"];
-    
+
     function getTagsFromShortcuts(shortcuts) {
         var tags = [];
         for( var i = 0, shortcut; shortcut = shortcuts[i]; i++ ) {
@@ -169,21 +169,23 @@
         }
         return tags;
     }
-    
+
     // The ID3v2 tag/frame size is encoded with four bytes where the most significant bit (bit 7) is set to zero in every byte, making a total of 28 bits. The zeroed bits are ignored, so a 257 bytes long tag is represented as $00 00 02 01.
     function readSynchsafeInteger32At(offset, data) {
-        var size1 = data.getByteAt(offset);
-        var size2 = data.getByteAt(offset+1);
-        var size3 = data.getByteAt(offset+2);
-        var size4 = data.getByteAt(offset+3);
+        var byts = data.getBytesAt(offset, 4);
+        var size1 = byts[0] & 0xff;
+        var size2 = byts[1] & 0xff;
+        var size3 = byts[2] & 0xff;
+        var size4 = byts[3] & 0xff;
         // 0x7f = 0b01111111
         var size = size4 & 0x7f
                  | ((size3 & 0x7f) << 7)
                  | ((size2 & 0x7f) << 14)
                  | ((size1 & 0x7f) << 21);
-    
+
         return size;
     }
+    ID3v2.readSynchsafeInteger32At = readSynchsafeInteger32At;
 
     function readFrameFlags(data, offset)
     {
@@ -195,7 +197,7 @@
                 file_alter_preservation : data.isBitSetAt( offset, 5),
                 read_only               : data.isBitSetAt( offset, 4)
             },
-            format: 
+            format:
             {
                 grouping_identity       : data.isBitSetAt( offset+1, 7),
                 compression             : data.isBitSetAt( offset+1, 3),
@@ -204,7 +206,7 @@
                 data_length_indicator   : data.isBitSetAt( offset+1, 0)
             }
         };
-        
+
         return flags;
     }
 
@@ -217,15 +219,15 @@
         var frames = {};
         var frameDataSize;
         var major = id3header["major"];
-        
+
         tags = getTagsFromShortcuts(tags || _defaultShortcuts);
-        
+
         while( offset < end ) {
             var readFrameFunc = null;
             var frameData = data;
             var frameDataOffset = offset;
             var flags = null;
-            
+
             switch( major ) {
                 case 2:
                 var frameID = frameData.getStringAt(frameDataOffset, 3);
@@ -238,7 +240,7 @@
                 var frameSize = frameData.getLongAt(frameDataOffset+4, true);
                 var frameHeaderSize = 10;
                 break;
-                
+
                 case 4:
                 var frameID = frameData.getStringAt(frameDataOffset, 4);
                 var frameSize = readSynchsafeInteger32At(frameDataOffset+4, frameData);
@@ -247,21 +249,21 @@
             }
             // if last frame GTFO
             if( frameID == "" ) { break; }
-            
+
             // advance data offset to the next frame data
             offset += frameHeaderSize + frameSize;
             // skip unwanted tags
             if( tags.indexOf( frameID ) < 0 ) { continue; }
-            
+
             // read frame message and format flags
             if( major > 2 )
             {
                 flags = readFrameFlags(frameData, frameDataOffset+8);
             }
-            
+
             frameDataOffset += frameHeaderSize;
-            
-            // the first 4 bytes are the real data size 
+
+            // the first 4 bytes are the real data size
             // (after unsynchronisation && encryption)
             if( flags && flags.format.data_length_indicator )
             {
@@ -269,32 +271,32 @@
                 frameDataOffset += 4;
                 frameSize -= 4;
             }
-            
+
             // TODO: support unsynchronisation
             if( flags && flags.format.unsynchronisation )
             {
                 //frameData = removeUnsynchronisation(frameData, frameSize);
                 continue;
             }
-                            
+
             // find frame parsing function
-            if( frameID in ID3v2.readFrameData ) {
+            if (ID3v2.readFrameData[frameID] !== undefined) {
                 readFrameFunc = ID3v2.readFrameData[frameID];
             } else if( frameID[0] == "T" ) {
                 readFrameFunc = ID3v2.readFrameData["T*"];
             }
-            
+
             var parsedData = readFrameFunc ? readFrameFunc(frameDataOffset, frameSize, frameData, flags) : undefined;
-            var desc = frameID in ID3v2.frames ? ID3v2.frames[frameID] : 'Unknown';
-        
+            var desc = ID3v2.frames[frameID] !== undefined ? ID3v2.frames[frameID] : 'Unknown';
+
             var frame = {
                 id          : frameID,
                 size        : frameSize,
                 description : desc,
                 data        : parsedData
             };
-        
-            if( frameID in frames ) {
+
+            if (frames[frameID] !== undefined) {
                 if( frames[frameID].id ) {
                     frames[frameID] = [frames[frameID]];
                 }
@@ -303,7 +305,7 @@
                 frames[frameID] = frame;
             }
         }
-    
+
         return frames;
     }
 
@@ -314,16 +316,20 @@
 
     function getFrameData( frames, ids ) {
         if( typeof ids == 'string' ) { ids = [ids]; }
-    
+
         for( var i = 0, id; id = ids[i]; i++ ) {
-            if( id in frames ) { return frames[id].data; }
+            if (frames[id] !== undefined) {
+                return frames[id].data;
+            }
         }
     }
-    
+
     ID3v2.loadData = function(data, callback) {
-        data.loadRange([0, readSynchsafeInteger32At(6, data)], callback);
+        data.loadRange([6, 9], function() {
+            data.loadRange([0, readSynchsafeInteger32At(6, data)], callback);
+        });
     };
-    
+
     // http://www.id3.org/id3v2.3.0
     ID3v2.readTagsFromData = function(data, tags) {
         var offset = 0;
@@ -335,7 +341,7 @@
         var xindicator = data.isBitSetAt(offset+5, 5);
         var size = readSynchsafeInteger32At(offset+6, data);
         offset += 10;
-        
+
         if( xheader ) {
             var xheadersize = data.getLongAt(offset, true);
             // The 'Extended header size', currently 6 or 10 bytes, excludes itself.
@@ -359,16 +365,16 @@
     	    var data = getFrameData( frames, _shortcuts[name] );
     	    if( data ) id3[name] = data;
     	}
-    	
+
     	for( var frame in frames ) {
     	    if( frames.hasOwnProperty(frame) ) {
     	        id3[frame] = frames[frame];
     	    }
     	}
-    	
+
     	return id3;
     };
-    
+
     // Export functions for closure compiler
     ns["ID3v2"] = ID3v2;
 })(this);

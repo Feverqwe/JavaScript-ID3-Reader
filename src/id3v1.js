@@ -78,7 +78,7 @@
     		return {};
     	}
     };
-    
+
     // Export functions for closure compiler
     ns["ID3v1"] = ns.ID3v1;
 })(this);
