@@ -10,7 +10,7 @@ function BinaryFile(strData, iDataOffset, iDataLength) {
 		return data;
 	};
 
-	if (typeof strData === "string") {
+	if (typeof strData == "string") {
 		dataLength = iDataLength || data.length;
 
 		this.getByteAt = function(iOffset) {
@@ -65,11 +65,10 @@ function BinaryFile(strData, iDataOffset, iDataLength) {
 			return iUShort;
 	};
 	this.getLongAt = function(iOffset, bBigEndian) {
-		var byts = this.getBytesAt(iOffset, 4);
-                var iByte1 = byts[0] & 0xff,
-                    iByte2 = byts[1] & 0xff,
-                    iByte3 = byts[2] & 0xff,
-                    iByte4 = byts[3] & 0xff;
+		var iByte1 = this.getByteAt(iOffset),
+			iByte2 = this.getByteAt(iOffset + 1),
+			iByte3 = this.getByteAt(iOffset + 2),
+			iByte4 = this.getByteAt(iOffset + 3);
 
 		var iLong = bBigEndian ?
 			(((((iByte1 << 8) + iByte2) << 8) + iByte3) << 8) + iByte4
@@ -86,10 +85,9 @@ function BinaryFile(strData, iDataOffset, iDataLength) {
 	};
 	// @aadsm
 	this.getInteger24At = function(iOffset, bBigEndian) {
-                var byts = this.getBytesAt(iOffset, 3);
-                var iByte1 = byts[0] & 0xff,
-                    iByte2 = byts[1] & 0xff,
-                    iByte3 = byts[2] & 0xff;
+        var iByte1 = this.getByteAt(iOffset),
+			iByte2 = this.getByteAt(iOffset + 1),
+			iByte3 = this.getByteAt(iOffset + 2);
 
 		var iInteger = bBigEndian ?
 			((((iByte1 << 8) + iByte2) << 8) + iByte3)
@@ -98,12 +96,11 @@ function BinaryFile(strData, iDataOffset, iDataLength) {
 		return iInteger;
     };
 	this.getStringAt = function(iOffset, iLength) {
-		var aStr = new Array(iLength);
-                var byts = this.getBytesAt(iOffset, iLength);
-                for (var j = 0; j < iLength; j++) {
-                    aStr[j] = String.fromCharCode(byts[j] & 0xff);
-                }
-                return aStr.join("");
+		var aStr = [];
+		for (var i=iOffset,j=0;i<iOffset+iLength;i++,j++) {
+			aStr[j] = String.fromCharCode(this.getByteAt(i));
+		}
+		return aStr.join("");
 	};
 	// @aadsm
 	this.getStringWithCharsetAt = function(iOffset, iLength, iCharset) {
@@ -120,10 +117,6 @@ function BinaryFile(strData, iDataOffset, iDataLength) {
 		    case 'utf-8':
 		        sString = StringUtils.readUTF8String(bytes);
 		        break;
-
-                    case 'iso-8859-1':
-                        sString = StringUtils.readISO_8859_1String(bytes);
-                        break;
 
 		    default:
 		        sString = StringUtils.readNullTerminatedString(bytes);
@@ -148,13 +141,12 @@ function BinaryFile(strData, iDataOffset, iDataLength) {
     };
 }
 
-document.write(
-	"<script type='text/vbscript'>\r\n"
-	+ "Function IEBinary_getByteAt(strBinary, iOffset)\r\n"
-	+ "	IEBinary_getByteAt = AscB(MidB(strBinary,iOffset+1,1))\r\n"
-	+ "End Function\r\n"
-	+ "Function IEBinary_getLength(strBinary)\r\n"
-	+ "	IEBinary_getLength = LenB(strBinary)\r\n"
-	+ "End Function\r\n"
-	+ "</script>\r\n"
-);
+var js = document.createElement('script');
+js.type = 'text/vbscript';
+js.textContent = "Function IEBinary_getByteAt(strBinary, iOffset)\r\n" +
+    "	IEBinary_getByteAt = AscB(MidB(strBinary,iOffset+1,1))\r\n" +
+    "End Function\r\n" +
+    "Function IEBinary_getLength(strBinary)\r\n" +
+    "	IEBinary_getLength = LenB(strBinary)\r\n" +
+    "End Function\r\n";
+document.getElementsByTagName('head')[0].appendChild(js);

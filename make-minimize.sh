@@ -1,4 +1,4 @@
-CLOSURE_COMPILER=/usr/local/closure-compiler/compiler.jar
+CLOSURE_COMPILER=./compiler.jar
 
 java -jar "$CLOSURE_COMPILER" \
     --compilation_level ADVANCED_OPTIMIZATIONS \
@@ -6,7 +6,6 @@ java -jar "$CLOSURE_COMPILER" \
     --js src/binaryfile.js \
     --js src/bufferedbinaryajax.js \
     --js src/filereader.js \
-    --js src/bufferedfilereader.js \
     --js src/id3.js \
     --js src/id3v1.js \
     --js src/id3v2.js \

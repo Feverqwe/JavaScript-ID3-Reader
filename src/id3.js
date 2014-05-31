@@ -12,7 +12,7 @@
     
     var _files = {};
     // location of the format identifier
-    var _formatIDRange = [0, 11];
+    var _formatIDRange = [0, 7];
     
     /**
      * Finds out the tag format of this data and returns the appropriate
@@ -49,9 +49,9 @@
      */
     ID3.loadTags = function(url, cb, options) {
         options = options || {};
-        var dataReader = (options["file"]) ? BufferedBinaryFileReader : (options["dataReader"] || BufferedBinaryAjax);
+        var dataReader = options["dataReader"] || BufferedBinaryAjax;
         
-        dataReader(options["file"] || url, function(data) {
+        dataReader(url, function(data) {
             // preload the format identifier
             data.loadRange(_formatIDRange, function() {
                 var reader = getTagReader(data);
@@ -60,7 +60,7 @@
                     if( cb ) cb();
                 });
             });
-        });     
+        }, options["onError"]);
     };
 
     ID3.getAllTags = function(url) {

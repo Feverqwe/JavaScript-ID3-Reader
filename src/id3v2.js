@@ -278,14 +278,14 @@
             }
                             
             // find frame parsing function
-            if (ID3v2.readFrameData[frameID] !== undefined) {
+            if( frameID in ID3v2.readFrameData ) {
                 readFrameFunc = ID3v2.readFrameData[frameID];
             } else if( frameID[0] == "T" ) {
                 readFrameFunc = ID3v2.readFrameData["T*"];
             }
             
             var parsedData = readFrameFunc ? readFrameFunc(frameDataOffset, frameSize, frameData, flags) : undefined;
-            var desc = ID3v2.frames[frameID] !== undefined ? ID3v2.frames[frameID] : 'Unknown';
+            var desc = frameID in ID3v2.frames ? ID3v2.frames[frameID] : 'Unknown';
         
             var frame = {
                 id          : frameID,
@@ -294,7 +294,7 @@
                 data        : parsedData
             };
         
-            if( frames[frameID] !== undefined ) {
+            if( frameID in frames ) {
                 if( frames[frameID].id ) {
                     frames[frameID] = [frames[frameID]];
                 }
@@ -313,16 +313,15 @@
     //}
 
     function getFrameData( frames, ids ) {
-        if( typeof ids === 'string' ) { ids = [ids]; }
+        if( typeof ids == 'string' ) { ids = [ids]; }
+    
         for( var i = 0, id; id = ids[i]; i++ ) {
-            if( frames[id] !== undefined ) { return frames[id].data; }
+            if( id in frames ) { return frames[id].data; }
         }
     }
     
     ID3v2.loadData = function(data, callback) {
-        data.loadRange([6, 9], function() {
-            data.loadRange([0, readSynchsafeInteger32At(6, data)], callback);
-        });
+        data.loadRange([0, readSynchsafeInteger32At(6, data)], callback);
     };
     
     // http://www.id3.org/id3v2.3.0
