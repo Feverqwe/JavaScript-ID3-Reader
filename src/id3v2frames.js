@@ -85,11 +85,39 @@
             return 0;
         }
     };
-
+/*
+    var readString = function (offset, data) {
+        var str = '';
+        var byte = -1;
+        var n = 512;
+        while (byte !== 0 && n > 0) {
+            byte = data.getByteAt(offset, 1);
+            offset++;
+            str += String.fromCharCode(byte);
+            n--;
+        }
+        if (n === 0) {
+            console.log('string read error!!!');
+        }
+        return [str, offset];
+    };
+*/
     ID3v2.readFrameData['APIC'] = function readPictureFrame(offset, length, data, flags, v) {
-        v = v || '3';
-
         var start = offset;
+        var tmp;
+        var encoding = data.getByteAt(offset);
+        offset++;
+        var ret = {};
+        tmp = data.readString(offset, null, 'latin1');
+        ret.mime = tmp[0];
+        offset = tmp[1];
+        ret.type = data.getByteAt(offset, null, 1);
+        offset++;
+        tmp = data.readString(offset, null, getTextEncoding(encoding));
+        ret.description = tmp[0];
+        offset = tmp[1];
+        ret.data = data.getBytesAt(offset, length - offset - start);
+        /*
         var charset = getTextEncoding( data.getByteAt(offset) );
         var img_s = false;
         switch( v ) {
@@ -121,6 +149,13 @@
             "type" : type,
             "description" : desc.toString(),
             "data" : data.getBytesAt(offset, (start+length) - offset)
+        };
+        */
+        return {
+            "format" : ret.mime,
+            "type" : ret.mime,
+            "description" : ret.description,
+            "data" : ret.data
         };
     };
 

@@ -131,6 +131,111 @@ function BinaryFile(strData, iDataOffset, iDataLength) {
 		return sString;
 	};
 
+    this.decodeString = function(offset, length, encoding, advance) {
+        var b1, b2, b3, b4, bom, c, end, littleEndian, nullEnd, pt, result, w1, w2;
+        encoding = encoding.toLowerCase();
+        nullEnd = length === null ? 0 : -1;
+        if (length == null) {
+            length = Infinity;
+        }
+        end = offset + length;
+        result = '';
+        switch (encoding) {
+            case 'iso-8859-1':
+            case 'ascii':
+            case 'latin1':
+                while (offset < end && (c = this.getByteAt(offset++)) !== nullEnd) {
+                    result += String.fromCharCode(c);
+                }
+                break;
+            case 'utf8':
+            case 'utf-8':
+                while (offset < end && (b1 = this.getByteAt(offset++)) !== nullEnd) {
+                    if ((b1 & 0x80) === 0) {
+                        result += String.fromCharCode(b1);
+                    } else if ((b1 & 0xe0) === 0xc0) {
+                        b2 = this.getByteAt(offset++) & 0x3f;
+                        result += String.fromCharCode(((b1 & 0x1f) << 6) | b2);
+                    } else if ((b1 & 0xf0) === 0xe0) {
+                        b2 = this.getByteAt(offset++) & 0x3f;
+                        b3 = this.getByteAt(offset++) & 0x3f;
+                        result += String.fromCharCode(((b1 & 0x0f) << 12) | (b2 << 6) | b3);
+                    } else if ((b1 & 0xf8) === 0xf0) {
+                        b2 = this.getByteAt(offset++) & 0x3f;
+                        b3 = this.getByteAt(offset++) & 0x3f;
+                        b4 = this.getByteAt(offset++) & 0x3f;
+                        pt = (((b1 & 0x0f) << 18) | (b2 << 12) | (b3 << 6) | b4) - 0x10000;
+                        result += String.fromCharCode(0xd800 + (pt >> 10), 0xdc00 + (pt & 0x3ff));
+                    }
+                }
+                break;
+            case 'utf16-be':
+            case 'utf16be':
+            case 'utf-16':
+            case 'utf16le':
+            case 'utf16-le':
+            case 'utf16bom':
+            case 'utf16-bom':
+                switch (encoding) {
+                    case 'utf16be':
+                    case 'utf16-be':
+                        littleEndian = false;
+                        break;
+                    case 'utf16le':
+                    case 'utf16-le':
+                        littleEndian = true;
+                        break;
+                    case 'utf16bom':
+                    case 'utf16-bom':
+                        if (length < 2 || (bom = this.getShortAt(offset)) === nullEnd) {
+                            /*
+                            if (advance) {
+                                this.advance(offset += 2);
+                            }
+                            */
+                            return result;
+                        }
+                        littleEndian = bom === 0xfffe;
+                        offset += 2;
+                }
+                while (offset < end && (w1 = this.getShortAt(offset, littleEndian)) !== nullEnd) {
+                    offset += 2;
+                    if (w1 < 0xd800 || w1 > 0xdfff) {
+                        result += String.fromCharCode(w1);
+                    } else {
+                        if (w1 > 0xdbff) {
+                            throw new Error("Invalid utf16 sequence.");
+                        }
+                        w2 = this.getShortAt(offset, littleEndian);
+                        if (w2 < 0xdc00 || w2 > 0xdfff) {
+                            throw new Error("Invalid utf16 sequence.");
+                        }
+                        result += String.fromCharCode(w1, w2);
+                        offset += 2;
+                    }
+                }
+                if (w1 === nullEnd) {
+                    offset += 2;
+                }
+                break;
+            default:
+                throw new Error("Unknown encoding: " + encoding);
+        }
+        /*
+        if (advance) {
+            this.advance(offset);
+        }
+        */
+        return [result,offset];
+    };
+
+    this.readString = function(offset, length, encoding) {
+        if (encoding == null) {
+            encoding = 'ascii';
+        }
+        return this.decodeString(offset, length, encoding, true);
+    };
+
 	this.getCharAt = function(iOffset) {
 		return String.fromCharCode(this.getByteAt(iOffset));
 	};
