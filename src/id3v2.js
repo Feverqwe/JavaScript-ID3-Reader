@@ -325,9 +325,7 @@
     }
 
     ID3v2.loadData = function(data, callback) {
-        data.loadRange([6, 9], function() {
-            data.loadRange([0, readSynchsafeInteger32At(6, data)], callback);
-        });
+        data.loadRange([0, readSynchsafeInteger32At(6, data)], callback);
     };
 
     // http://www.id3.org/id3v2.3.0

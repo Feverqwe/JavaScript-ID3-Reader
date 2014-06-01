@@ -49,7 +49,7 @@
      */
     ID3.loadTags = function(url, cb, options) {
         options = options || {};
-        var dataReader = (options["file"]) ? BufferedFileReader : options["dataReader"];
+        var dataReader = (options["file"] !== undefined) ? BufferedFileReader : options["dataReader"];
 
         dataReader(options["file"] || url, function(data) {
             // preload the format identifier
