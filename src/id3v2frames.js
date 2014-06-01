@@ -111,7 +111,7 @@
         tmp = data.readString(offset, null, 'latin1');
         ret.mime = tmp[0];
         offset = tmp[1];
-        ret.type = data.getByteAt(offset, null, 1);
+        ret.type = data.getByteAt(offset);
         offset++;
         tmp = data.readString(offset, null, getTextEncoding(encoding));
         ret.description = tmp[0];
