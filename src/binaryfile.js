@@ -219,7 +219,9 @@ function BinaryFile(strData, iDataOffset, iDataLength) {
                 }
                 break;
             default:
-                throw new Error("Unknown encoding: " + encoding);
+                // throw new Error("Unknown encoding: " + encoding);
+                result = this.getStringWithCharsetAt(offset, length, encoding);
+                offset+= result.length;
         }
         /*
         if (advance) {

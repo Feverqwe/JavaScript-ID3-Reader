@@ -153,7 +153,7 @@
         */
         return {
             "format" : ret.mime,
-            "type" : ret.mime,
+            "type" : pictureType[ret.type],
             "description" : ret.description,
             "data" : ret.data
         };
